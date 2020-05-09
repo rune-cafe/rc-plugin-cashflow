@@ -78,6 +78,7 @@ public class CashFlowPlugin extends Plugin {
 			try {
 				urlString = "https://api.rune.cafe/api/gehistory/" + URLEncoder.encode(client.getLocalPlayer().getName(), "UTF-8") + "/snapshot";
 			} catch(UnsupportedEncodingException e) {
+				Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
 				return;
 			};
 
@@ -100,13 +101,6 @@ public class CashFlowPlugin extends Plugin {
 				@Override
 				public void onResponse(Call call, Response response)
 				{
-					Logger.getLogger("cafe.rune.cashflow").info("Sent GE History snapshot.");
-					Logger.getLogger("cafe.rune.cashflow").info(Integer.toString(response.code()));
-					try {
-						Logger.getLogger("cafe.rune.cashflow").info(response.body().string());
-					} catch(IOException e) {
-						throw new RuntimeException(e);
-					}
 					response.close();
 				}
 			});
