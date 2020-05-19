@@ -2,7 +2,11 @@ package cafe.rune.cashflow;
 
 import com.google.gson.Gson;
 import com.google.inject.Provides;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
+import net.runelite.api.GrandExchangeOffer;
+import net.runelite.api.ItemComposition;
+import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.callback.ClientThread;
@@ -15,6 +19,8 @@ import net.runelite.http.api.RuneLiteAPI;
 import okhttp3.*;
 
 import javax.inject.Inject;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -50,6 +56,15 @@ public class CashFlowPlugin extends Plugin {
 	}
 
 	@Subscribe
+	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
+	{
+		GrandExchangeOffer offer = offerEvent.getOffer();
+
+
+
+	}
+
+	@Subscribe
 	public void onWidgetLoaded(WidgetLoaded widgetLoadedEvent)
 	{
 		if(widgetLoadedEvent.getGroupId() != 383) {
@@ -64,6 +79,7 @@ public class CashFlowPlugin extends Plugin {
 
 		Widget historyTitleWidget = optionalHistoryTitleWidget.get();
 		clientThread.invokeLater(() -> {
+			RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey());
 			Widget[] geHistoryData = historyTitleWidget.getParent().getParent().getStaticChildren()[2].getDynamicChildren();
 
 			List<GEHistoryRecord> records = new ArrayList<>();
@@ -74,38 +90,50 @@ public class CashFlowPlugin extends Plugin {
 			Gson gson = new Gson();
 			System.out.println(gson.toJson(records));
 
-			String urlString;
-			try {
-				urlString = "https://api.rune.cafe/api/gehistory/" + URLEncoder.encode(client.getLocalPlayer().getName(), "UTF-8") + "/snapshot";
-			} catch(UnsupportedEncodingException e) {
-				Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
-				return;
-			};
-
-			Request request = new Request.Builder()
-						.header("Authorization", "Bearer " + config.apiKey())
-						.header("Accept", "application/json")
-						.header("Content-Type", "application/json")
-						.post(RequestBody.create(JSON, gson.toJson(records)))
-						.url(HttpUrl.parse(urlString))
-						.build();
-
-			RuneLiteAPI.CLIENT.newCall(request).enqueue(new Callback()
-			{
-				@Override
-				public void onFailure(Call call, IOException e)
-				{
-					Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error sending snapshot.", e);
-				}
-
-				@Override
-				public void onResponse(Call call, Response response)
-				{
-					response.close();
-				}
-			});
+			apiClient.postGEHistorySnapshot(client.getLocalPlayer().getName(),
+					records,
+					this::onGEHistorySnapshotResponse,
+					this::onGEHistorySnapshotError
+					);
 
 		});
+	}
+
+	private void onGEHistorySnapshotResponse(Response r) {
+		if(r.isSuccessful()) {
+			if(config.echoUploads()) {
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+						"Successfully sent a GE history snapshot to rune.cafe!",
+						"rune.cafe");
+			}
+		} else {
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+					"Something went wrong while submitting ge history to rune.cafe!",
+					"rune.cafe");
+
+			String body;
+			try {
+				body = r.body().string();
+				if(body.isEmpty()) {
+					body = "<empty>";
+				}
+			} catch(IOException e) {
+				body = "<error reading response body>";
+			}
+
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+					"HTTP " + r.code() + ": " + body,
+					"rune.cafe");
+		}
+	}
+
+	private void onGEHistorySnapshotError(Exception e) {
+		client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+				"Something went wrong (client-side) while submitting ge history to rune.cafe!",
+				"rune.cafe");
+		client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+				e.getClass().getSimpleName() + ": " + e.getMessage(),
+				"rune.cafe");
 	}
 
 	private Optional<Widget> findChildDepthFirst(Widget root, Predicate<Widget> p) {
