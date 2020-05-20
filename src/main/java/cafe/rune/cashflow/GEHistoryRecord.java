@@ -1,5 +1,6 @@
 package cafe.rune.cashflow;
 
+import net.runelite.api.GrandExchangeOffer;
 import net.runelite.api.widgets.Widget;
 
 import java.util.regex.Matcher;
@@ -29,6 +30,15 @@ public class GEHistoryRecord {
         this.coinsEach = coinsEach;
         this.itemId = itemId;
         this.qty = qty;
+    }
+
+    public GEHistoryRecord(GrandExchangeOffer o) {
+        this.action = BoughtOrSold.fromState(o.getState());
+        this.coins = o.getSpent();
+        this.coinsEach = o.getPrice();
+        this.qty = o.getQuantitySold();
+        this.itemId = o.getItemId();
+        this.itemName = "";
     }
 
     public GEHistoryRecord(Widget[] src, int offset) {

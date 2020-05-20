@@ -1,6 +1,7 @@
 package cafe.rune.cashflow;
 
 import com.google.gson.Gson;
+import net.runelite.api.GrandExchangeOffer;
 import net.runelite.http.api.RuneLiteAPI;
 import okhttp3.*;
 
@@ -37,7 +38,19 @@ public class RuneCafeAPI {
         this.post(urlString, records, onResponse, onError);
     }
 
-    public void postLiveTrade() {
+    public void postLiveTrade(String osrsName,
+                              GrandExchangeOffer o,
+                              Consumer<Response> onResponse,
+                              Consumer<Exception> onError) {
+        String urlString;
+        try {
+            urlString = API_BASE_URL + URLEncoder.encode(osrsName, "UTF-8") + "/trade";
+        } catch(UnsupportedEncodingException e) {
+            Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
+            return;
+        };
+
+        this.post(urlString, o, onResponse, onError);
 
     }
 

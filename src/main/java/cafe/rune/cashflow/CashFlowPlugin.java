@@ -58,10 +58,28 @@ public class CashFlowPlugin extends Plugin {
 	@Subscribe
 	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
 	{
+		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey());
 		GrandExchangeOffer offer = offerEvent.getOffer();
+		
+		switch(offer.getState()) {
+			case BUYING:
+			case SELLING:
+			case EMPTY:
+				return;
+			case CANCELLED_BUY:
+			case CANCELLED_SELL:
+				if(offer.getQuantitySold() == 0) {
+					return;
+				}
+		}
 
-
-
+		apiClient.postLiveTrade(client.getLocalPlayer().getName(),
+				offer,
+				r -> onResponse(r,
+						"Successfully sent a trade to rune.cafe!",
+						"Something went wrong while submitting a trade to rune.cafe!"),
+				e -> onError(e, "Something went wrong (client-side) while submitting a trade to rune.cafe!")
+		);
 	}
 
 	@Subscribe
@@ -87,53 +105,56 @@ public class CashFlowPlugin extends Plugin {
 				records.add(new GEHistoryRecord(geHistoryData, i));
 			}
 
-			Gson gson = new Gson();
-			System.out.println(gson.toJson(records));
-
 			apiClient.postGEHistorySnapshot(client.getLocalPlayer().getName(),
 					records,
-					this::onGEHistorySnapshotResponse,
-					this::onGEHistorySnapshotError
+					r -> onResponse(r,
+							"Successfully sent a GE history snapshot to rune.cafe!",
+							"Something went wrong while submitting ge history to rune.cafe!"),
+					e -> onError(e, "Something went wrong (client-side) while submitting ge history to rune.cafe!")
 					);
 
 		});
 	}
 
-	private void onGEHistorySnapshotResponse(Response r) {
-		if(r.isSuccessful()) {
-			if(config.echoUploads()) {
+	private void onResponse(Response r, String successMessage, String errorMessage) {
+		clientThread.invokeLater(() -> {
+			if(r.isSuccessful()) {
+				if(config.echoUploads()) {
+					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+							successMessage,
+							"rune.cafe");
+				}
+			} else {
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
-						"Successfully sent a GE history snapshot to rune.cafe!",
+						errorMessage,
+						"rune.cafe");
+
+				String body;
+				try {
+					body = r.body().string();
+					if(body.isEmpty()) {
+						body = "<empty>";
+					}
+				} catch(IOException e) {
+					body = "<error reading response body>";
+				}
+
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+						"HTTP " + r.code() + ": " + body,
 						"rune.cafe");
 			}
-		} else {
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
-					"Something went wrong while submitting ge history to rune.cafe!",
-					"rune.cafe");
-
-			String body;
-			try {
-				body = r.body().string();
-				if(body.isEmpty()) {
-					body = "<empty>";
-				}
-			} catch(IOException e) {
-				body = "<error reading response body>";
-			}
-
-			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
-					"HTTP " + r.code() + ": " + body,
-					"rune.cafe");
-		}
+		});
 	}
 
-	private void onGEHistorySnapshotError(Exception e) {
-		client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
-				"Something went wrong (client-side) while submitting ge history to rune.cafe!",
-				"rune.cafe");
-		client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
-				e.getClass().getSimpleName() + ": " + e.getMessage(),
-				"rune.cafe");
+	private void onError(Exception e, String message) {
+		clientThread.invokeLater(() -> {
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+					message,
+					"rune.cafe");
+			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
+					e.getClass().getSimpleName() + ": " + e.getMessage(),
+					"rune.cafe");
+		});
 	}
 
 	private Optional<Widget> findChildDepthFirst(Widget root, Predicate<Widget> p) {
