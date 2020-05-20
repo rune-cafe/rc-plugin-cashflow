@@ -60,7 +60,7 @@ public class CashFlowPlugin extends Plugin {
 	{
 		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey());
 		GrandExchangeOffer offer = offerEvent.getOffer();
-		
+
 		switch(offer.getState()) {
 			case BUYING:
 			case SELLING:
