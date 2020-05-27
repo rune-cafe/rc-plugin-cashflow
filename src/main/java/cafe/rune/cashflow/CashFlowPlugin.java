@@ -58,7 +58,7 @@ public class CashFlowPlugin extends Plugin {
 	@Subscribe
 	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
 	{
-		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey());
+		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), config.useQa());
 		GrandExchangeOffer offer = offerEvent.getOffer();
 
 		switch(offer.getState()) {
@@ -97,7 +97,7 @@ public class CashFlowPlugin extends Plugin {
 
 		Widget historyTitleWidget = optionalHistoryTitleWidget.get();
 		clientThread.invokeLater(() -> {
-			RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey());
+			RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), config.useQa());
 			Widget[] geHistoryData = historyTitleWidget.getParent().getParent().getStaticChildren()[2].getDynamicChildren();
 
 			List<GEHistoryRecord> records = new ArrayList<>();
@@ -135,7 +135,7 @@ public class CashFlowPlugin extends Plugin {
 					if(body.isEmpty()) {
 						body = "<empty>";
 					}
-				} catch(IOException e) {
+				} catch(IOException | IllegalStateException e) {
 					body = "<error reading response body>";
 				}
 

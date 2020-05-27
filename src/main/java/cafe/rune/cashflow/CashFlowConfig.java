@@ -20,4 +20,10 @@ public interface CashFlowConfig extends Config
 			name = "Notify on Uploads",
 			description = "Print a message to chat whenever data is sent to rune.cafe.")
 	default boolean echoUploads() { return true; }
+
+	@ConfigItem(position=3,
+	keyName="useQa",
+	name="QA Mode",
+	description = "Use qa.rune.cafe.")
+	default boolean useQa() { return false; }
 }

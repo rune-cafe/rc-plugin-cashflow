@@ -16,11 +16,22 @@ import java.util.logging.Logger;
 import static net.runelite.http.api.RuneLiteAPI.JSON;
 
 public class RuneCafeAPI {
-    private final String API_BASE_URL = "https://api.rune.cafe/api/gehistory/";
+    private final String PROD_API_BASE_URL = "https://api.rune.cafe/api/gehistory/";
+    private final String QA_API_BASE_URL = "http://localhost:8080/api/gehistory/";
     private final String apiKey;
+    private final boolean qa;
 
-    public RuneCafeAPI(String apiKey) {
+    public RuneCafeAPI(String apiKey, boolean qa) {
         this.apiKey = apiKey;
+        this.qa = qa;
+    }
+
+    private String getBaseUrl() {
+        if(qa) {
+            return QA_API_BASE_URL;
+        } else {
+            return PROD_API_BASE_URL;
+        }
     }
 
     public void postGEHistorySnapshot(String osrsName,
@@ -29,7 +40,7 @@ public class RuneCafeAPI {
                                       Consumer<Exception> onError) {
         String urlString;
         try {
-            urlString = API_BASE_URL + URLEncoder.encode(osrsName, "UTF-8") + "/snapshot";
+            urlString = getBaseUrl() + URLEncoder.encode(osrsName, "UTF-8") + "/snapshot";
         } catch(UnsupportedEncodingException e) {
             Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
             return;
@@ -44,13 +55,13 @@ public class RuneCafeAPI {
                               Consumer<Exception> onError) {
         String urlString;
         try {
-            urlString = API_BASE_URL + URLEncoder.encode(osrsName, "UTF-8") + "/trade";
+            urlString = getBaseUrl() + URLEncoder.encode(osrsName, "UTF-8") + "/trade";
         } catch(UnsupportedEncodingException e) {
             Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
             return;
         };
 
-        this.post(urlString, o, onResponse, onError);
+        this.post(urlString, new GEHistoryRecord(o), onResponse, onError);
 
     }
 
