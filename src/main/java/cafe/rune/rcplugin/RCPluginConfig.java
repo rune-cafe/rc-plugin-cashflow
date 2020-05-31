@@ -1,11 +1,11 @@
-package cafe.rune.cashflow;
+package cafe.rune.rcplugin;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 
 @ConfigGroup("RuneCafe CashFlow")
-public interface CashFlowConfig extends Config
+public interface RCPluginConfig extends Config
 {
 	@ConfigItem(position = 1,
 			keyName = "apiKey",

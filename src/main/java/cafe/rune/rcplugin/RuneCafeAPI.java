@@ -1,4 +1,4 @@
-package cafe.rune.cashflow;
+package cafe.rune.rcplugin;
 
 import com.google.gson.Gson;
 import net.runelite.api.GrandExchangeOffer;

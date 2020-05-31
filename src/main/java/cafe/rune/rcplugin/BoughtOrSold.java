@@ -1,10 +1,6 @@
-package cafe.rune.cashflow;
+package cafe.rune.rcplugin;
 
 import net.runelite.api.GrandExchangeOfferState;
-
-import net.runelite.api.GrandExchangeOfferState;
-
-import static net.runelite.api.GrandExchangeOfferState.*;
 
 public enum BoughtOrSold {
     BOUGHT,

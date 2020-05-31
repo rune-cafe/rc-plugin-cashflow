@@ -1,11 +1,9 @@
-package cafe.rune.cashflow;
+package cafe.rune.rcplugin;
 
-import com.google.gson.Gson;
 import com.google.inject.Provides;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GrandExchangeOffer;
-import net.runelite.api.ItemComposition;
 import net.runelite.api.events.GrandExchangeOfferChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.widgets.Widget;
@@ -14,32 +12,22 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-import net.runelite.client.plugins.cooking.CookingConfig;
-import net.runelite.http.api.RuneLiteAPI;
 import okhttp3.*;
 
 import javax.inject.Inject;
-import javax.swing.*;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-import static net.runelite.http.api.RuneLiteAPI.JSON;
-
 @PluginDescriptor(
-		name = "RuneCafe Cash Flow",
-		description = "RuneCafe plugin providing RuneLite integration to track your cash flow on the GE.",
+		name = "RuneCafe Plugin",
+		description = "Plugin providing RuneLite integration for rune.cafe.",
 		tags = {"external", "integration", "prices", "trade"}
 )
-public class CashFlowPlugin extends Plugin {
+public class RCPlugin extends Plugin {
 	@Inject
 	private Client client;
 
@@ -47,12 +35,12 @@ public class CashFlowPlugin extends Plugin {
 	private ClientThread clientThread;
 
 	@Inject
-	private CashFlowConfig config;
+	private RCPluginConfig config;
 
 	@Provides
-	CashFlowConfig getConfig(ConfigManager configManager)
+	RCPluginConfig getConfig(ConfigManager configManager)
 	{
-		return configManager.getConfig(CashFlowConfig.class);
+		return configManager.getConfig(RCPluginConfig.class);
 	}
 
 	@Subscribe
