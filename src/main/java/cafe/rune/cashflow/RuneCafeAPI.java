@@ -17,7 +17,7 @@ import static net.runelite.http.api.RuneLiteAPI.JSON;
 
 public class RuneCafeAPI {
     private final String PROD_API_BASE_URL = "https://api.rune.cafe/api/gehistory/";
-    private final String QA_API_BASE_URL = "http://localhost:8080/api/gehistory/";
+    private final String QA_API_BASE_URL = "http://localhost:8081/api/gehistory/";
     private final String apiKey;
     private final boolean qa;
 

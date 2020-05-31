@@ -35,7 +35,7 @@ public class GEHistoryRecord {
     public GEHistoryRecord(GrandExchangeOffer o) {
         this.action = BoughtOrSold.fromState(o.getState());
         this.coins = o.getSpent();
-        this.coinsEach = o.getPrice();
+        this.coinsEach = o.getSpent() / o.getQuantitySold();
         this.qty = o.getQuantitySold();
         this.itemId = o.getItemId();
         this.itemName = "";
