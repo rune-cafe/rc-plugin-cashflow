@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @PluginDescriptor(
-		name = "RuneCafe Plugin",
+		name = "RuneCafe",
 		description = "Plugin providing RuneLite integration for rune.cafe.",
 		tags = {"external", "integration", "prices", "trade"}
 )
