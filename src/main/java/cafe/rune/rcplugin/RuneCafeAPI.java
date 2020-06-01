@@ -66,6 +66,10 @@ public class RuneCafeAPI {
     }
 
     private void post(String url, Object body, Consumer<Response> onResponse, Consumer<Exception> onError) {
+        if(this.apiKey == null || this.apiKey.isEmpty() || this.apiKey.matches("\\s+")) {
+            onError.accept(new IllegalStateException("API key is blank. An API key from rune.cafe is necessary."));
+            return;
+        }
         Gson gson = new Gson();
         Request request = new Request.Builder()
                 .header("Authorization", "Bearer " + this.apiKey)
