@@ -23,7 +23,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @PluginDescriptor(
-		name = "RuneCafe",
+		name = "RuneCafe Cash Flow",
 		description = "Plugin providing RuneLite integration for rune.cafe.",
 		tags = {"external", "integration", "prices", "trade"}
 )
@@ -46,7 +46,7 @@ public class RCPlugin extends Plugin {
 	@Subscribe
 	public void onGrandExchangeOfferChanged(GrandExchangeOfferChanged offerEvent)
 	{
-		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), config.useQa());
+		RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), false);
 		GrandExchangeOffer offer = offerEvent.getOffer();
 
 		switch(offer.getState()) {
@@ -85,7 +85,7 @@ public class RCPlugin extends Plugin {
 
 		Widget historyTitleWidget = optionalHistoryTitleWidget.get();
 		clientThread.invokeLater(() -> {
-			RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), config.useQa());
+			RuneCafeAPI apiClient = new RuneCafeAPI(config.apiKey(), false);
 			Widget[] geHistoryData = historyTitleWidget.getParent().getParent().getStaticChildren()[2].getDynamicChildren();
 
 			List<GEHistoryRecord> records = new ArrayList<>();
@@ -106,13 +106,13 @@ public class RCPlugin extends Plugin {
 
 	private void onResponse(Response r, String successMessage, String errorMessage) {
 		clientThread.invokeLater(() -> {
-			if(r.isSuccessful()) {
+			if(r.isSuccessful() && config.echoUploads()) {
 				if(config.echoUploads()) {
 					client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
 							successMessage,
 							"rune.cafe");
 				}
-			} else {
+			} else if(!r.isSuccessful() && config.echoErrors()) {
 				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
 						errorMessage,
 						"rune.cafe");
@@ -135,6 +135,10 @@ public class RCPlugin extends Plugin {
 	}
 
 	private void onError(Exception e, String message) {
+		if(!config.echoErrors()) {
+			return;
+		}
+
 		clientThread.invokeLater(() -> {
 			client.addChatMessage(ChatMessageType.GAMEMESSAGE, "rune.cafe",
 					message,

@@ -19,7 +19,13 @@ public interface RCPluginConfig extends Config
 			keyName = "echoUploads",
 			name = "Notify on Uploads",
 			description = "Print a message to chat whenever data is sent to rune.cafe.")
-	default boolean echoUploads() { return true; }
+	default boolean echoUploads() { return false; }
+
+	@ConfigItem(position=3,
+			keyName = "echoErrors",
+			name = "Notify on Errors",
+			description = "Print a message to chat whenever data fails to send to rune.cafe.")
+	default boolean echoErrors() { return false; }
 
 //	@ConfigItem(position=3,
 //	keyName="useQa",
