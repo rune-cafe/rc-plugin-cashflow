@@ -39,12 +39,7 @@ public class RuneCafeAPI {
                                       Consumer<Response> onResponse,
                                       Consumer<Exception> onError) {
         String urlString;
-        try {
-            urlString = getBaseUrl() + URLEncoder.encode(osrsName, "UTF-8") + "/snapshot";
-        } catch(UnsupportedEncodingException e) {
-            Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
-            return;
-        };
+        urlString = getBaseUrl() + encodeOSRSName(osrsName) + "/snapshot";
 
         this.post(urlString, records, onResponse, onError);
     }
@@ -53,13 +48,7 @@ public class RuneCafeAPI {
                               GrandExchangeOffer o,
                               Consumer<Response> onResponse,
                               Consumer<Exception> onError) {
-        String urlString;
-        try {
-            urlString = getBaseUrl() + URLEncoder.encode(osrsName, "UTF-8") + "/trade";
-        } catch(UnsupportedEncodingException e) {
-            Logger.getLogger("cafe.rune.cashflow").log(Level.WARNING,"Error encoding osrsname.", e);
-            return;
-        };
+        String urlString = getBaseUrl() + encodeOSRSName(osrsName) + "/trade";
 
         this.post(urlString, new GEHistoryRecord(o), onResponse, onError);
 
@@ -93,5 +82,9 @@ public class RuneCafeAPI {
                 response.close();
             }
         });
+    }
+
+    public static String encodeOSRSName(String n) {
+        return n.replaceAll(" ", "%20");
     }
 }
